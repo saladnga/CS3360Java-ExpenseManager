@@ -23,6 +23,7 @@ public class ExpenseManager_MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         dbHandler = new DatabaseHandler();
+        CSVHandler csvHandler = new CSVHandler();
 
         try {
             dbHandler.connect();
@@ -45,13 +46,17 @@ public class ExpenseManager_MainApp extends Application {
         Button readButton = new Button("View All Expenses");
         Button updateButton = new Button("Update Expense");
         Button deleteButton = new Button("Delete Expense");
+        Button exportButton = new Button("Export Expense as CSV");
+        Button importButton = new Button("Import CSV");
 
         createButton.setPrefWidth(150);
         readButton.setPrefWidth(150);
         deleteButton.setPrefWidth(150);
         updateButton.setPrefWidth(150);
+        exportButton.setPrefWidth(150);
+        importButton.setPrefWidth(150);
 
-        sidebar.getChildren().addAll(title, new Separator(), createButton, readButton, deleteButton, updateButton);
+        sidebar.getChildren().addAll(title, new Separator(), createButton, readButton, deleteButton, updateButton, exportButton, importButton);
 
         // Main Content
         VBox content = new VBox(10);
@@ -110,6 +115,39 @@ public class ExpenseManager_MainApp extends Application {
         deleteButton.setOnAction(_ -> {
             deleteExpense();
             loadData();
+        });
+
+        exportButton.setOnAction(_ -> {
+            try {
+                List<Expense> expenses = dbHandler.getAllExpenses();
+                System.out.println("Exporting " + expenses.size() + " expenses");
+                for (Expense e : expenses) {
+                    System.out.println(e.getId() + " - " + e.getName());
+                }
+                csvHandler.writeCSV("expenses_export.csv", expenses);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Exported file");
+                alert.showAndWait();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to export file");
+                alert.showAndWait();
+            }
+        });
+
+        importButton.setOnAction(_ -> {
+            try {
+                List<Expense> imported = csvHandler.readCSV("/Users/UserN/Desktop/TROY/CS-3360/project/expenses_export.csv");
+                for (Expense expense : imported) {
+                    dbHandler.saveExpense(expense);
+                }
+                loadData();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Imported file");
+                alert.showAndWait();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to import file");
+                alert.showAndWait();
+            }
         });
 
         // Main Layout
