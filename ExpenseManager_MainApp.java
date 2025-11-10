@@ -5,7 +5,9 @@ import java.util.List;
 
 // Import JavaFX
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.scene.Scene;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
@@ -34,7 +36,7 @@ public class ExpenseManager_MainApp extends Application {
 
         BorderPane mainLayout = new BorderPane();
 
-        // Sidebar
+        // Left Sidebar
         VBox sidebar = new VBox(15);
         sidebar.setStyle("-fx-padding: 20; -fx-background-color: #2c3e58");
         sidebar.setPrefWidth(180);
@@ -57,6 +59,30 @@ public class ExpenseManager_MainApp extends Application {
         importButton.setPrefWidth(150);
 
         sidebar.getChildren().addAll(title, new Separator(), createButton, readButton, deleteButton, updateButton, exportButton, importButton);
+
+        // Right Sidebar
+        ChartService chartService = new ChartService();
+        VBox rightSidebar = new VBox(15);
+        rightSidebar.setPadding(new Insets(15));
+        rightSidebar.setStyle("-fx-padding: 20; -fx-background-color: #f4f4f4");
+        Label chartTitle = new Label("Visualization");
+        chartTitle.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 16px; -fx-font-weight: bold");
+
+//        Button chartButton = new Button("View Chart");
+//        chartButton.setPrefWidth(150);
+
+        PieChart pieChart = new PieChart();
+        pieChart.setLabelsVisible(true);
+
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel("Month");
+
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Total Amount");
+
+        StackedBarChart<String, Number> stackedBarChart = new StackedBarChart<>(xAxis, yAxis);
+
+        rightSidebar.getChildren().addAll(chartTitle, pieChart, stackedBarChart);
 
         // Main Content
         VBox content = new VBox(10);
@@ -101,20 +127,24 @@ public class ExpenseManager_MainApp extends Application {
         createButton.setOnAction(_ -> {
             createExpense();
             loadData();
+            updateChart(rightSidebar, chartService);
         });
 
         readButton.setOnAction(_ -> {
             loadData();
+            updateChart(rightSidebar, chartService);
         });
 
         updateButton.setOnAction(_ -> {
             updateExpense();
             loadData();
+            updateChart(rightSidebar, chartService);
         });
 
         deleteButton.setOnAction(_ -> {
             deleteExpense();
             loadData();
+            updateChart(rightSidebar, chartService);
         });
 
         exportButton.setOnAction(_ -> {
@@ -125,6 +155,8 @@ public class ExpenseManager_MainApp extends Application {
                     System.out.println(e.getId() + " - " + e.getName());
                 }
                 csvHandler.writeCSV("expenses_export.csv", expenses);
+                loadData();
+                updateChart(rightSidebar, chartService);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Exported file");
                 alert.showAndWait();
             } catch (Exception ex) {
@@ -141,6 +173,7 @@ public class ExpenseManager_MainApp extends Application {
                     dbHandler.saveExpense(expense);
                 }
                 loadData();
+                updateChart(rightSidebar, chartService);
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Imported file");
                 alert.showAndWait();
             } catch (Exception ex) {
@@ -150,9 +183,21 @@ public class ExpenseManager_MainApp extends Application {
             }
         });
 
+//        chartButton.setOnAction(_ -> {
+//            List <Expense> expenses = dbHandler.getAllExpenses();
+//            javafx.collections.ObservableList<Expense> observableExpenses = javafx.collections.FXCollections.observableArrayList(expenses);
+//            PieChart updatedPieChart = chartService.createPieChart(observableExpenses);
+//            StackedBarChart<String, Number> updatedStackedChart = chartService.createStackedBarChart(observableExpenses);
+//
+//            rightSidebar.getChildren().setAll(chartTitle, chartButton, updatedPieChart, updatedStackedChart);
+//        });
+
+        updateChart(rightSidebar, chartService);
+
         // Main Layout
         mainLayout.setLeft(sidebar);
         mainLayout.setCenter(content);
+        mainLayout.setRight(rightSidebar);
 
         // Create Scene
         Scene scene = new Scene(mainLayout, 900, 600);
@@ -414,6 +459,19 @@ public class ExpenseManager_MainApp extends Application {
         tableView.getItems().clear();
         List<Expense> expenses = dbHandler.getAllExpenses();
         tableView.getItems().addAll(expenses);
+    }
+
+    private void updateChart(VBox rightSidebar, ChartService  chartService) {
+        List<Expense> expenses = dbHandler.getAllExpenses();
+        javafx.collections.ObservableList<Expense> observableExpenses = javafx.collections.FXCollections.observableArrayList(expenses);
+
+        PieChart autoPieChart = chartService.createPieChart(observableExpenses);
+        StackedBarChart<String, Number> autoStackedBarChart = chartService.createStackedBarChart(observableExpenses);
+
+        Label chartTitle = new Label("Visualization:");
+        chartTitle.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 16px; -fx-font-weight: bold");
+
+        rightSidebar.getChildren().setAll(chartTitle, autoPieChart, autoStackedBarChart);
     }
 
     public static void main(String[] args) {
