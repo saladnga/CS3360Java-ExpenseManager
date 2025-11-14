@@ -15,22 +15,33 @@ import javafx.stage.Stage;
 import javafx.geometry.Insets;
 
 // javac --module-path /Users/UserN/Desktop/TROY/CS-3360/project/lib --add-modules javafx.controls ExpenseManager_MainApp.java
-// java --module-path /Users/UserN/Desktop/TROY/CS-3360/project/lib --add-modules javafx.controls -cp /Users/UserN/Desktop/TROY/CS-3360/project/lib/sqlite-jdbc-3.42.0.0.jar:. ExpenseManager_MainApp
+// java --module-path /Users/UserN/Desktop/TROY/CS-3360/project/lib --add-modules javafx.controls -cp /Users/UserN/Desktop/TROY/CS-3360/project/lib/sqlite-jdbcjava --module-path /Users/UserN/Desktop/TROY/CS-3360/project/lib --add-modules javafx.controls -cp /Users/UserN/Desktop/TROY/CS-3360/project/lib/sqlite-jdbc-3.42.0.0.jar:. ExpenseManager_MainApp-3.42.0.0.jar:. ExpenseManager_MainApp
 
 public class ExpenseManager_MainApp extends Application {
 
     private DatabaseHandler dbHandler;
     private TableView<Expense> tableView;
+    private Integer currentUserId = -1;
+    private Button logoutButton;
 
     @Override
     public void start(Stage primaryStage) {
         dbHandler = new DatabaseHandler();
         CSVHandler csvHandler = new CSVHandler();
+        logoutButton = new Button("Log out");
+        logoutButton.setPrefWidth(150);
+        logoutButton.setOnAction(e -> logout());
 
         try {
             dbHandler.connect();
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return;
+        }
+
+        boolean loggedIn = showLogin();
+        if (!loggedIn) {
+            System.out.println("User did not login. Exiting.");
             return;
         }
 
@@ -44,47 +55,41 @@ public class ExpenseManager_MainApp extends Application {
         Label title = new Label("Menu");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold");
 
+        // Buttons and add to sidebar
         Button createButton = new Button("Create Expense");
         Button readButton = new Button("View All Expenses");
         Button updateButton = new Button("Update Expense");
         Button deleteButton = new Button("Delete Expense");
         Button exportButton = new Button("Export Expense as CSV");
         Button importButton = new Button("Import CSV");
-
         createButton.setPrefWidth(150);
         readButton.setPrefWidth(150);
         deleteButton.setPrefWidth(150);
         updateButton.setPrefWidth(150);
         exportButton.setPrefWidth(150);
         importButton.setPrefWidth(150);
+        sidebar.getChildren().addAll(title, new Separator(), createButton, readButton, deleteButton, updateButton, exportButton, importButton, logoutButton);
 
-        sidebar.getChildren().addAll(title, new Separator(), createButton, readButton, deleteButton, updateButton, exportButton, importButton);
-
-        // Right Sidebar
+        // Right Sidebar (Charts)
         ChartService chartService = new ChartService();
+
         VBox rightSidebar = new VBox(15);
         rightSidebar.setPadding(new Insets(15));
         rightSidebar.setStyle("-fx-padding: 20; -fx-background-color: #f4f4f4");
         Label chartTitle = new Label("Visualization");
         chartTitle.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 16px; -fx-font-weight: bold");
 
-//        Button chartButton = new Button("View Chart");
-//        chartButton.setPrefWidth(150);
-
         PieChart pieChart = new PieChart();
         pieChart.setLabelsVisible(true);
-
         CategoryAxis xAxis = new CategoryAxis();
         xAxis.setLabel("Month");
-
         NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Total Amount");
 
         StackedBarChart<String, Number> stackedBarChart = new StackedBarChart<>(xAxis, yAxis);
-
         rightSidebar.getChildren().addAll(chartTitle, pieChart, stackedBarChart);
 
-        // Main Content
+        // Main Content: List all expenses
         VBox content = new VBox(10);
         content.setPadding(new Insets(15));
 
@@ -149,7 +154,7 @@ public class ExpenseManager_MainApp extends Application {
 
         exportButton.setOnAction(_ -> {
             try {
-                List<Expense> expenses = dbHandler.getAllExpenses();
+                List<Expense> expenses = dbHandler.getAllExpenses(currentUserId);
                 System.out.println("Exporting " + expenses.size() + " expenses");
                 for (Expense e : expenses) {
                     System.out.println(e.getId() + " - " + e.getName());
@@ -170,7 +175,7 @@ public class ExpenseManager_MainApp extends Application {
             try {
                 List<Expense> imported = csvHandler.readCSV("/Users/UserN/Desktop/TROY/CS-3360/project/expenses_export.csv");
                 for (Expense expense : imported) {
-                    dbHandler.saveExpense(expense);
+                    dbHandler.saveExpense(expense, currentUserId);
                 }
                 loadData();
                 updateChart(rightSidebar, chartService);
@@ -182,15 +187,6 @@ public class ExpenseManager_MainApp extends Application {
                 alert.showAndWait();
             }
         });
-
-//        chartButton.setOnAction(_ -> {
-//            List <Expense> expenses = dbHandler.getAllExpenses();
-//            javafx.collections.ObservableList<Expense> observableExpenses = javafx.collections.FXCollections.observableArrayList(expenses);
-//            PieChart updatedPieChart = chartService.createPieChart(observableExpenses);
-//            StackedBarChart<String, Number> updatedStackedChart = chartService.createStackedBarChart(observableExpenses);
-//
-//            rightSidebar.getChildren().setAll(chartTitle, chartButton, updatedPieChart, updatedStackedChart);
-//        });
 
         updateChart(rightSidebar, chartService);
 
@@ -234,7 +230,7 @@ public class ExpenseManager_MainApp extends Application {
                 Expense newExpense = new Expense(null, dateField.getText(), nameField.getText(), amount,
                         categoryField.getText(), descriptionField.getText());
 
-                dbHandler.saveExpense(newExpense);
+                dbHandler.saveExpense(newExpense, currentUserId);
                 formStage.close();
             } catch (NumberFormatException ex) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Amount must be a number");
@@ -289,7 +285,7 @@ public class ExpenseManager_MainApp extends Application {
         fetchButton.setOnAction(_ -> {
             try {
                 int id = Integer.parseInt(idField.getText());
-                Expense expenseToUpdate = dbHandler.getExpenseById(id);
+                Expense expenseToUpdate = dbHandler.getExpenseById(id, currentUserId);
 
                 if (expenseToUpdate != null) {
                     nameField.setText(expenseToUpdate.getName());
@@ -312,7 +308,7 @@ public class ExpenseManager_MainApp extends Application {
             try {
                 int id = Integer.parseInt(idField.getText());
                 double amount = Double.parseDouble(amountField.getText());
-                Expense expenseToUpdate = dbHandler.getExpenseById(id);
+                Expense expenseToUpdate = dbHandler.getExpenseById(id, currentUserId);
 
                 if (expenseToUpdate != null) {
                     expenseToUpdate.setName(nameField.getText());
@@ -321,7 +317,7 @@ public class ExpenseManager_MainApp extends Application {
                     expenseToUpdate.setCategory(categoryField.getText());
                     expenseToUpdate.setDescription(descriptionField.getText());
 
-                    boolean updated = dbHandler.updateExpense(expenseToUpdate);
+                    boolean updated = dbHandler.updateExpense(expenseToUpdate, currentUserId);
                     if (updated) {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Expense updated successfully");
                         alert.showAndWait();
@@ -391,7 +387,7 @@ public class ExpenseManager_MainApp extends Application {
         fetchButton.setOnAction(_ -> {
             try {
                 int id = Integer.parseInt(idField.getText());
-                Expense expenseToUpdate = dbHandler.getExpenseById(id);
+                Expense expenseToUpdate = dbHandler.getExpenseById(id, currentUserId);
 
                 if (expenseToUpdate != null) {
                     nameField.setText(expenseToUpdate.getName());
@@ -412,11 +408,11 @@ public class ExpenseManager_MainApp extends Application {
         deleteButton.setOnAction(_ -> {
             try {
                 int id = Integer.parseInt(idField.getText());
-                Expense expenseToDelete = dbHandler.getExpenseById(id);
+                Expense expenseToDelete = dbHandler.getExpenseById(id, currentUserId);
 
                 if (expenseToDelete != null) {
 
-                    boolean deleted = dbHandler.deleteExpense(expenseToDelete);
+                    boolean deleted = dbHandler.deleteExpense(expenseToDelete, currentUserId);
                     if (deleted) {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION, "Expense deleted successfully");
                         alert.showAndWait();
@@ -457,12 +453,12 @@ public class ExpenseManager_MainApp extends Application {
 
     private void loadData() {
         tableView.getItems().clear();
-        List<Expense> expenses = dbHandler.getAllExpenses();
+        List<Expense> expenses = dbHandler.getAllExpenses(currentUserId);
         tableView.getItems().addAll(expenses);
     }
 
     private void updateChart(VBox rightSidebar, ChartService  chartService) {
-        List<Expense> expenses = dbHandler.getAllExpenses();
+        List<Expense> expenses = dbHandler.getAllExpenses(currentUserId);
         javafx.collections.ObservableList<Expense> observableExpenses = javafx.collections.FXCollections.observableArrayList(expenses);
 
         PieChart autoPieChart = chartService.createPieChart(observableExpenses);
@@ -472,6 +468,96 @@ public class ExpenseManager_MainApp extends Application {
         chartTitle.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 16px; -fx-font-weight: bold");
 
         rightSidebar.getChildren().setAll(chartTitle, autoPieChart, autoStackedBarChart);
+    }
+
+    private boolean showLogin() {
+        Stage loginStage = new Stage();
+        loginStage.setTitle("Login or Register");
+
+        Label usernameLabel = new Label("Username");
+        TextField usernameField = new TextField();
+
+        Label passwordLabel = new Label("Password");
+        PasswordField passwordField = new PasswordField();
+
+        Button loginButton = new Button("Login");
+        Button registerButton = new Button("Register");
+
+        final boolean[] loggedIn = { false };
+
+        loginButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
+            String password = passwordField.getText().trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Please enter both username and password");
+                return;
+            }
+
+            int userId = dbHandler.login(new User(null, username, password));
+            if (userId != -1) {
+                currentUserId = userId;
+                loggedIn[0] = true;
+                showAlert(Alert.AlertType.INFORMATION, "Login successful");
+                loginStage.close();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Invalid username or password");
+            }
+        });
+
+        registerButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
+            String password = passwordField.getText().trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Please enter both username and password");
+                return;
+            }
+
+            boolean success = dbHandler.register(new User(null, username, password));
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Registered successfully! You can now log in.");
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Registration failed. Username might already exist.");
+            }
+        });
+
+        HBox buttons = new HBox(10, loginButton, registerButton);
+        VBox layout = new VBox(10, usernameLabel, usernameField, passwordLabel, passwordField, buttons);
+        layout.setPadding(new javafx.geometry.Insets(15));
+
+        loginStage.setScene(new Scene(layout, 300, 200));
+        loginStage.showAndWait();
+
+        return loggedIn[0];
+    }
+
+    private void showAlert(Alert.AlertType type, String message) {
+        Alert alert = new Alert(type, message);
+        alert.showAndWait();
+    }
+
+    public void logout() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("Confirm Logout");
+        alert.setContentText("Are you sure you want to log out?");
+
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            currentUserId = -1;
+            System.out.println("User logged out successfully");
+
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            stage.close();
+
+            boolean loggedIn = showLogin();
+            if (loggedIn) {
+                System.out.println("User did not login. Exiting");
+                System.exit(0);
+            } else {
+                start(new Stage());
+            }
+        }
     }
 
     public static void main(String[] args) {
