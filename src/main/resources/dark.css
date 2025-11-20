@@ -1,0 +1,166 @@
+/* ===== Global Dark Mode ===== */
+.root {
+    -fx-base: #1e1e1e;
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+}
+
+/* ===== Sidebar ===== */
+.vbox {
+    -fx-background-color: #1e1e1e;
+}
+
+.button {
+    -fx-background-color: #2c2c2c;
+    -fx-text-fill: #eeeeee;
+    -fx-background-radius: 5;
+}
+.button:hover {
+    -fx-background-color: #3b3b3b;
+}
+
+/* ===== Table ===== */
+.table-view {
+    -fx-background-color: #1e1e1e;
+    -fx-table-cell-border-color: #3a3a3a;
+    -fx-padding: 0;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #2d2d2d;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-size: 35px;
+    -fx-background-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: white;
+}
+.table-row-cell:filled:selected {
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: white;
+}
+
+.table-view {
+    -fx-background-color: #1f1f1f;
+    -fx-control-inner-background: #1f1f1f;
+    -fx-cell-hover-color: #333333;
+    -fx-text-background-color: #e5e5e5;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #2a2a2a;
+}
+
+.table-view .column-header, .table-view .column-header .label {
+    -fx-text-fill: #e5e5e5;
+}
+
+.table-row-cell {
+    -fx-background-color: #1f1f1f;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #3a3a3a;
+}
+
+.table-cell {
+    -fx-text-fill: #e5e5e5;
+}
+
+
+/* ===== Summary Cards ===== */
+.summary-card {
+    -fx-background-color: #2b2b2b;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 3);
+}
+
+.summary-card .label {
+    -fx-text-fill: white;
+}
+
+/* ===== Chart Container Background ===== */
+.stack-pane {
+    -fx-background-color: #1e1e1e;
+}
+
+/* ===== PieChart, BarChart, LineChart backgrounds ===== */
+
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-container {
+    -fx-background-color: #121212;
+    -fx-padding: 20;
+    -fx-background-radius: 10;
+}
+
+.chart-plot-background {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #444;
+}
+
+.chart-title,
+.axis-label,
+.chart-legend {
+    -fx-text-fill: white;
+}
+
+.chart-pie-label-line {
+    -fx-stroke: #cccccc;
+}
+
+.chart-pie-label {
+    -fx-text-fill: #f1f1f1;
+}
+
+
+.right-sidebar {
+    -fx-background-color: #1e1e1e;
+}
+
+
+/* Axis text */
+.axis .text {
+    -fx-fill: white;
+}
+
+/* Legend background */
+.chart-legend {
+    -fx-background-color: #2a2a2a;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
+/* ComboBox */
+.combo-box, .combo-box .cell {
+    -fx-background-color: #2c2c2c;
+    -fx-text-fill: white;
+}
+.combo-box .arrow-button {
+    -fx-background-color: #3a3a3a;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: #2c2c2c;
+}
+
+
+.robot-pane {
+    -fx-background-color: transparent;
+}
+
+.robot-bubble {
+    -fx-background-color: #2f2f2f;
+    -fx-text-fill: white;
+    -fx-border-color: #aaaaaa;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+

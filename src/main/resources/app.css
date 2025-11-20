@@ -1,0 +1,38 @@
+.root {
+    -fx-font-family: "Inter";
+}
+
+/* Sidebar buttons */
+.sidebar-button {
+    -fx-background-color: #394b70;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-padding: 10 15;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #4a5f8b;
+}
+
+/* Chart container */
+.chart-container {
+    -fx-background-color: #ffffff;
+    -fx-padding: 20;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 15,0,0,5);
+}
+
+.robot-pane {
+    -fx-background-color: transparent;
+}
+
+.robot-bubble {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+    -fx-border-color: #555;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+
