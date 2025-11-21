@@ -1,166 +1,220 @@
 /* ===== Global Dark Mode ===== */
 .root {
-    -fx-base: #1e1e1e;
-    -fx-background-color: #1e1e1e;
-    -fx-text-fill: white;
+  -fx-base: #1e1e1e;
+  -fx-background-color: #1e1e1e;
+  -fx-text-fill: white;
 }
 
 /* ===== Sidebar ===== */
 .vbox {
-    -fx-background-color: #1e1e1e;
+  -fx-background-color: #1e1e1e;
 }
 
 .button {
-    -fx-background-color: #2c2c2c;
-    -fx-text-fill: #eeeeee;
-    -fx-background-radius: 5;
+  -fx-background-color: #2c2c2c;
+  -fx-text-fill: #eeeeee;
+  -fx-background-radius: 5;
 }
 .button:hover {
-    -fx-background-color: #3b3b3b;
+  -fx-background-color: #3b3b3b;
 }
 
 /* ===== Table ===== */
 .table-view {
-    -fx-background-color: #1e1e1e;
-    -fx-table-cell-border-color: #3a3a3a;
-    -fx-padding: 0;
+  -fx-background-color: #1e1e1e;
+  -fx-table-cell-border-color: #3a3a3a;
+  -fx-padding: 0;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #2d2d2d;
+  -fx-background-color: #2d2d2d;
 }
 
-.table-view .column-header, .table-view .filler {
-    -fx-size: 35px;
-    -fx-background-color: transparent;
+.table-view .column-header,
+.table-view .filler {
+  -fx-size: 35px;
+  -fx-background-color: transparent;
 }
 
 .table-row-cell {
-    -fx-background-color: #1e1e1e;
-    -fx-text-fill: white;
+  -fx-background-color: #1e1e1e;
+  -fx-text-fill: white;
 }
 .table-row-cell:filled:selected {
-    -fx-background-color: #3c3c3c;
-    -fx-text-fill: white;
+  -fx-background-color: #3c3c3c;
+  -fx-text-fill: white;
 }
 
 .table-view {
-    -fx-background-color: #1f1f1f;
-    -fx-control-inner-background: #1f1f1f;
-    -fx-cell-hover-color: #333333;
-    -fx-text-background-color: #e5e5e5;
+  -fx-background-color: #1f1f1f;
+  -fx-control-inner-background: #1f1f1f;
+  -fx-cell-hover-color: #333333;
+  -fx-text-background-color: #e5e5e5;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: #2a2a2a;
+  -fx-background-color: #2a2a2a;
 }
 
-.table-view .column-header, .table-view .column-header .label {
-    -fx-text-fill: #e5e5e5;
+.table-view .column-header,
+.table-view .column-header .label {
+  -fx-text-fill: #e5e5e5;
 }
 
 .table-row-cell {
-    -fx-background-color: #1f1f1f;
+  -fx-background-color: #1f1f1f;
 }
 
 .table-row-cell:filled:selected {
-    -fx-background-color: #3a3a3a;
+  -fx-background-color: #3a3a3a;
 }
 
 .table-cell {
-    -fx-text-fill: #e5e5e5;
+  -fx-text-fill: #e5e5e5;
 }
-
 
 /* ===== Summary Cards ===== */
 .summary-card {
-    -fx-background-color: #2b2b2b;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-padding: 15;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 3);
+  -fx-background-color: #2b2b2b;
+  -fx-background-radius: 10;
+  -fx-border-radius: 10;
+  -fx-padding: 15;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 3);
 }
 
 .summary-card .label {
-    -fx-text-fill: white;
+  -fx-text-fill: white;
 }
 
 /* ===== Chart Container Background ===== */
 .stack-pane {
-    -fx-background-color: #1e1e1e;
+  -fx-background-color: #1e1e1e;
 }
 
 /* ===== PieChart, BarChart, LineChart backgrounds ===== */
 
 .chart {
-    -fx-background-color: transparent;
+  -fx-background-color: transparent;
 }
 
 .chart-container {
-    -fx-background-color: #121212;
-    -fx-padding: 20;
-    -fx-background-radius: 10;
+  -fx-background-color: #121212;
+  -fx-padding: 20;
+  -fx-background-radius: 10;
 }
 
 .chart-plot-background {
-    -fx-background-color: #1e1e1e;
-    -fx-border-color: #444;
+  -fx-background-color: #1e1e1e;
+  -fx-border-color: #444;
 }
 
 .chart-title,
 .axis-label,
 .chart-legend {
-    -fx-text-fill: white;
+  -fx-text-fill: white;
 }
 
 .chart-pie-label-line {
-    -fx-stroke: #cccccc;
+  -fx-stroke: #cccccc;
 }
 
 .chart-pie-label {
-    -fx-text-fill: #f1f1f1;
+  -fx-text-fill: #f1f1f1;
 }
-
 
 .right-sidebar {
-    -fx-background-color: #1e1e1e;
+  -fx-background-color: #1e1e1e;
+  -fx-padding: 15 15 15 15;
 }
 
+/* Left sidebar styling for dark theme */
+.sidebar {
+  -fx-padding: 20;
+  -fx-background-color: #222831;
+}
+
+.sidebar-title {
+  -fx-text-fill: white;
+  -fx-font-size: 16px;
+  -fx-font-weight: bold;
+}
+
+.sidebar-label {
+  -fx-text-fill: #e5e5e5;
+}
+
+/* Section titles (e.g. All Expenses, Visualization) */
+.section-title {
+  -fx-font-size: 18px;
+  -fx-font-weight: bold;
+  -fx-text-fill: white;
+}
+
+/* Summary card text styling: make values and titles a brighter blue and larger */
+.summary-card .card-title {
+  -fx-text-fill: #e5e5e5;
+  -fx-font-size: 14px;
+  -fx-font-weight: 600;
+}
+
+.summary-card .card-value {
+  -fx-text-fill: #66a0d9;
+  -fx-font-size: 22px;
+  -fx-font-weight: 700;
+}
 
 /* Axis text */
 .axis .text {
-    -fx-fill: white;
+  -fx-fill: white;
 }
 
 /* Legend background */
 .chart-legend {
-    -fx-background-color: #2a2a2a;
-    -fx-background-radius: 5;
-    -fx-border-radius: 5;
+  -fx-background-color: #2a2a2a;
+  -fx-background-radius: 5;
+  -fx-border-radius: 5;
 }
 
 /* ComboBox */
-.combo-box, .combo-box .cell {
-    -fx-background-color: #2c2c2c;
-    -fx-text-fill: white;
+.combo-box,
+.combo-box .cell {
+  -fx-background-color: #2c2c2c;
+  -fx-text-fill: white;
 }
 .combo-box .arrow-button {
-    -fx-background-color: #3a3a3a;
+  -fx-background-color: #3a3a3a;
 }
 .combo-box-popup .list-view {
-    -fx-background-color: #2c2c2c;
+  -fx-background-color: #2c2c2c;
 }
 
-
 .robot-pane {
-    -fx-background-color: transparent;
+  -fx-background-color: transparent;
 }
 
 .robot-bubble {
-    -fx-background-color: #2f2f2f;
-    -fx-text-fill: white;
-    -fx-border-color: #aaaaaa;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+  -fx-background-color: #2f2f2f;
+  -fx-text-fill: white;
+  -fx-border-color: #aaaaaa;
+  -fx-border-radius: 5;
+  -fx-background-radius: 5;
 }
 
+/* Calendar day number and spend label colors */
+.calendar-day-label {
+  -fx-font-weight: bold;
+  -fx-text-fill: #111111;
+}
+
+.calendar-spend-label {
+  -fx-font-size: 12px;
+  -fx-text-fill: #f90000ff;
+}
+
+/* Ensure Text nodes inside table cells (e.g. wrapped description Text) use readable color in dark theme */
+.table-view .table-cell .text,
+.table-view .text,
+.table-view Text,
+.table-view .table-cell Text {
+  -fx-fill: #e5e5e5; /* light text for dark background */
+}

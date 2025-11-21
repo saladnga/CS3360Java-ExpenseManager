@@ -104,20 +104,12 @@ public class CalendarPane extends VBox {
             cell.setAlignment(Pos.TOP_CENTER);
             cell.setPrefSize(75, 60);
 
-            boolean isDark = false;
-            if (this.getScene() != null) {
-                isDark = this.getScene().getStylesheets().stream()
-                        .anyMatch(s -> s.contains("dark.css"));
-            }
-
-            String dayColor = isDark ? "white" : "black";
-            String spendColor = isDark ? "#cccccc" : "#444";
-
+            // Use CSS classes instead of inline colors so theme switching controls text color
             Label dayLabel = new Label(String.valueOf(day));
-            dayLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + dayColor + ";");
+            dayLabel.getStyleClass().add("calendar-day-label");
 
             Label spendLabel = new Label(spending > 0 ? String.format("$%.2f", spending) : "");
-            spendLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + spendColor + ";");
+            spendLabel.getStyleClass().add("calendar-spend-label");
 
             cell.getChildren().addAll(dayLabel, spendLabel);
 

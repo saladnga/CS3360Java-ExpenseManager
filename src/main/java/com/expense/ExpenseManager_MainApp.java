@@ -1,4 +1,5 @@
 package com.expense;// Import SQL
+
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
 import javafx.stage.FileChooser;
 
@@ -33,15 +35,12 @@ import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.util.Duration;
-
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 
-
-
-
+// Compile: mvn -q clean compile
+// Run: mvn -q javafx:run
 
 public class ExpenseManager_MainApp extends Application {
 
@@ -53,7 +52,6 @@ public class ExpenseManager_MainApp extends Application {
     private VBox rightSidebar;
     private String currentCurrency = "USD";
 
-
     // ===== CURRENCY =====
     private final CurrencyConverter converter = new CurrencyConverter();
     private String selectedCurrency = "USD";
@@ -63,8 +61,7 @@ public class ExpenseManager_MainApp extends Application {
     private static final Map<String, String> CATEGORY_MAP = new HashMap<>();
     private static final List<String> CATEGORY_LIST = Arrays.asList(
             "Food & Drinks", "Utilities", "Personal Care", "Entertainment",
-            "Education", "Health", "Transportation", "Electronics", "Sports", "Food"
-    );
+            "Education", "Health", "Transportation", "Electronics", "Sports", "Food");
 
     static {
         CATEGORY_MAP.put("food", "Food & Drinks");
@@ -133,15 +130,19 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private int levenshteinDistance(String a, String b) {
-        int[][] dp = new int[a.length()+1][b.length()+1];
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
 
-        for (int i = 0; i <= a.length(); i++) dp[i][0] = i;
-        for (int j = 0; j <= b.length(); j++) dp[0][j] = j;
+        for (int i = 0; i <= a.length(); i++)
+            dp[i][0] = i;
+        for (int j = 0; j <= b.length(); j++)
+            dp[0][j] = j;
 
         for (int i = 1; i <= a.length(); i++) {
             for (int j = 1; j <= b.length(); j++) {
-                if (a.charAt(i-1) == b.charAt(j-1)) dp[i][j] = dp[i-1][j-1];
-                else dp[i][j] = 1 + Math.min(dp[i-1][j-1], Math.min(dp[i-1][j], dp[i][j-1]));
+                if (a.charAt(i - 1) == b.charAt(j - 1))
+                    dp[i][j] = dp[i - 1][j - 1];
+                else
+                    dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
             }
         }
         return dp[a.length()][b.length()];
@@ -181,16 +182,17 @@ public class ExpenseManager_MainApp extends Application {
 
         // Sidebar
         VBox sidebar = new VBox(15);
-        sidebar.setStyle("-fx-padding: 20; -fx-background-color: #2c3e58");
+        // use CSS class so themes control background and text color
+        sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(180);
 
         Label title = new Label("Menu");
-        title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold");
+        title.getStyleClass().add("sidebar-title");
 
-        Button createButton = new Button("Create com.expense.Expense");
-        Button readButton = new Button("View All Expenses");
-        Button updateButton = new Button("Update com.expense.Expense");
-        Button deleteButton = new Button("Delete com.expense.Expense");
+        Button createButton = new Button("Create Expense");
+        Button readButton = new Button("Refresh");
+        Button updateButton = new Button("Update Expense");
+        Button deleteButton = new Button("Delete Expense");
         Button importButton = new Button("Import CSV");
         Button reportButton = new Button("Generate Report");
         reportButton.setPrefWidth(150);
@@ -206,14 +208,13 @@ public class ExpenseManager_MainApp extends Application {
             refreshCurrencyUI();
         });
 
-
         for (Button b : Arrays.asList(createButton, readButton, updateButton, deleteButton, importButton)) {
             b.setPrefWidth(150);
         }
 
         // ===== CURRENCY SELECTOR =====
         Label currencyLabel = new Label("Currency:");
-        currencyLabel.setStyle("-fx-text-fill: white;");
+        currencyLabel.getStyleClass().add("sidebar-label");
         ComboBox<String> currencySelector = new ComboBox<>();
         currencySelector.getItems().addAll("USD", "EUR", "VND", "JPY", "GBP");
         currencySelector.setValue("USD");
@@ -231,9 +232,10 @@ public class ExpenseManager_MainApp extends Application {
             Scene scene = logoutButton.getScene();
             if (darkMode.isSelected()) {
                 scene.getStylesheets().setAll(getClass().getResource("/dark.css").toExternalForm());
-            }
-            else {
+                darkMode.setText("Light mode");
+            } else {
                 scene.getStylesheets().setAll(getClass().getResource("/app.css").toExternalForm());
+                darkMode.setText("Dark mode");
             }
         });
 
@@ -252,9 +254,16 @@ public class ExpenseManager_MainApp extends Application {
         rightSidebar = new VBox(15);
         rightSidebar.getStyleClass().add("right-sidebar");
         rightSidebar.setPadding(new Insets(15));
+        // align children to the left so the "Visualization" label lines up with center
+        // content
+        rightSidebar.setAlignment(Pos.TOP_LEFT);
 
         Label chartTitle = new Label("Visualization");
-        chartTitle.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 16px; -fx-font-weight: bold");
+        // use CSS class so themes can control size/color
+        chartTitle.getStyleClass().add("section-title");
+        // expand label width and align text to left so it matches the center title
+        chartTitle.setMaxWidth(Double.MAX_VALUE);
+        chartTitle.setAlignment(Pos.BASELINE_LEFT);
 
         ComboBox<String> chartSelector = new ComboBox<>();
         chartSelector.getItems().addAll(
@@ -264,8 +273,7 @@ public class ExpenseManager_MainApp extends Application {
                 "Line Chart",
                 "Area Chart",
                 "Scatter Chart",
-                "Donut Chart"
-        );
+                "Donut Chart");
         chartSelector.setValue("Pie Chart");
 
         StackPane chartContainer = new StackPane();
@@ -275,8 +283,7 @@ public class ExpenseManager_MainApp extends Application {
         Runnable updateChartUI = () -> {
             chartContainer.getChildren().clear();
             var data = javafx.collections.FXCollections.observableArrayList(
-                    dbHandler.getAllExpenses(currentUserId)
-            );
+                    dbHandler.getAllExpenses(currentUserId));
 
             // Apply currency conversion to expense objects
             for (Expense ex : data) {
@@ -317,8 +324,7 @@ public class ExpenseManager_MainApp extends Application {
                 chartSelector,
                 chartContainer,
                 new Separator(),
-                calendarPane
-        );
+                calendarPane);
 
         updateChartUI.run();
 
@@ -327,12 +333,21 @@ public class ExpenseManager_MainApp extends Application {
         // ============================
         VBox content = new VBox(10);
         content.setPadding(new Insets(15));
+        // ensure center content children align to the left as well
+        content.setAlignment(Pos.TOP_LEFT);
 
         Label contentTitle = new Label("All Expenses");
-        contentTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        // match chart title via CSS
+        contentTitle.getStyleClass().add("section-title");
+        contentTitle.setMaxWidth(Double.MAX_VALUE);
+        contentTitle.setAlignment(Pos.BASELINE_LEFT);
 
         tableView = new TableView<>();
         tableView.getStyleClass().add("table-view");
+        // Make columns resize to fill the table width so the Description column can
+        // take
+        // remaining space instead of leaving unused blank area.
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Expense, Integer> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -352,6 +367,40 @@ public class ExpenseManager_MainApp extends Application {
 
         TableColumn<Expense, String> descCol = new TableColumn<>("Description");
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        // Make description column wrap text and allow row height to expand
+        descCol.setCellFactory(col -> {
+            TableCell<Expense, String> cell = new TableCell<>() {
+                private final Text text = new Text();
+                {
+                    text.wrappingWidthProperty().bind(col.widthProperty().subtract(10));
+                    setPrefHeight(Control.USE_COMPUTED_SIZE);
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setGraphic(null);
+                        setText(null);
+                    } else {
+                        text.setText(item);
+                        setGraphic(text);
+                    }
+                }
+            };
+            return cell;
+        });
+
+        // Set reasonable pref widths for other columns so Description naturally gets
+        // the rest
+        idCol.setPrefWidth(50);
+        nameCol.setPrefWidth(150);
+        dateCol.setPrefWidth(110);
+        amountCol.setPrefWidth(100);
+        categoryCol.setPrefWidth(130);
+        // Allow description column to expand fully
+        descCol.setMaxWidth(Double.MAX_VALUE);
 
         tableView.getColumns().addAll(idCol, nameCol, dateCol, amountCol, categoryCol, descCol);
 
@@ -394,16 +443,15 @@ public class ExpenseManager_MainApp extends Application {
 
         reportButton.setOnAction(e -> showReportWindow());
 
-
         importButton.setOnAction(e -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Import CSV");
             chooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("CSV Files", "*.csv")
-            );
+                    new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 
             File selectedFile = chooser.showOpenDialog(null);
-            if (selectedFile == null) return;
+            if (selectedFile == null)
+                return;
 
             try {
                 List<Expense> imported = csvHandler.readCSV(selectedFile.getAbsolutePath());
@@ -425,7 +473,6 @@ public class ExpenseManager_MainApp extends Application {
             }
         });
 
-
         mainLayout.setLeft(sidebar);
         mainLayout.setCenter(content);
         mainLayout.setRight(rightSidebar);
@@ -433,7 +480,7 @@ public class ExpenseManager_MainApp extends Application {
         Scene scene = new Scene(mainLayout, 1100, 650);
         scene.getStylesheets().add(getClass().getResource("/app.css").toExternalForm());
         primaryStage.setScene(scene);
-        primaryStage.setTitle("com.expense.Expense Manager");
+        primaryStage.setTitle("Expense Manager");
         primaryStage.show();
     }
 
@@ -454,7 +501,7 @@ public class ExpenseManager_MainApp extends Application {
     // ============= CREATE EXPENSE =============
     private void createExpense() {
         Stage form = new Stage();
-        form.setTitle("Create com.expense.Expense");
+        form.setTitle("Create Expense");
 
         Label nameL = new Label("Name:");
         TextField nameF = new TextField();
@@ -483,10 +530,13 @@ public class ExpenseManager_MainApp extends Application {
                         nameF.getText(),
                         amount,
                         categoryNormalized,
-                        descF.getText()
-                );
+                        descF.getText());
 
                 dbHandler.saveExpense(ex, currentUserId);
+                // refresh UI immediately so user sees the new expense without clicking "View
+                // All Expenses"
+                loadData();
+                refreshCurrencyUI();
                 form.close();
             } catch (Exception err) {
                 showAlert(Alert.AlertType.ERROR, "Invalid input!");
@@ -504,7 +554,7 @@ public class ExpenseManager_MainApp extends Application {
     // ============= UPDATE EXPENSE =============
     private void updateExpense() {
         Stage form = new Stage();
-        form.setTitle("Update com.expense.Expense");
+        form.setTitle("Update Expense");
 
         TextField idF = new TextField();
         TextField nameF = new TextField();
@@ -520,7 +570,7 @@ public class ExpenseManager_MainApp extends Application {
             try {
                 Expense ex = dbHandler.getExpenseById(Integer.parseInt(idF.getText()), currentUserId);
                 if (ex == null) {
-                    showAlert(Alert.AlertType.ERROR, "com.expense.Expense not found");
+                    showAlert(Alert.AlertType.ERROR, "Expense not found");
                     return;
                 }
 
@@ -571,7 +621,7 @@ public class ExpenseManager_MainApp extends Application {
     // ============= DELETE EXPENSE =============
     private void deleteExpense() {
         Stage form = new Stage();
-        form.setTitle("Delete com.expense.Expense");
+        form.setTitle("Delete Expense");
 
         TextField idF = new TextField();
 
@@ -583,7 +633,7 @@ public class ExpenseManager_MainApp extends Application {
                 Expense ex = dbHandler.getExpenseById(id, currentUserId);
 
                 if (ex == null) {
-                    showAlert(Alert.AlertType.ERROR, "com.expense.Expense not found");
+                    showAlert(Alert.AlertType.ERROR, "Expense not found");
                     return;
                 }
 
@@ -595,7 +645,7 @@ public class ExpenseManager_MainApp extends Application {
             }
         });
 
-        VBox layout = new VBox(10, new Label("com.expense.Expense ID"), idF, delete);
+        VBox layout = new VBox(10, new Label("Expense ID"), idF, delete);
         layout.setPadding(new Insets(15));
 
         form.setScene(new Scene(layout, 250, 150));
@@ -628,7 +678,7 @@ public class ExpenseManager_MainApp extends Application {
         Button loginBtn = new Button("Login");
         Button registerBtn = new Button("Register");
 
-        final boolean[] result = {false};
+        final boolean[] result = { false };
 
         loginBtn.setOnAction(e -> {
             int id = dbHandler.login(new User(null, username.getText(), password.getText()));
@@ -636,7 +686,8 @@ public class ExpenseManager_MainApp extends Application {
                 currentUserId = id;
                 result[0] = true;
                 login.close();
-            } else showAlert(Alert.AlertType.ERROR, "Wrong username or password");
+            } else
+                showAlert(Alert.AlertType.ERROR, "Wrong username or password");
         });
 
         registerBtn.setOnAction(e -> showRegister());
@@ -644,8 +695,7 @@ public class ExpenseManager_MainApp extends Application {
         VBox layout = new VBox(10,
                 new Label("Username"), username,
                 new Label("Password"), password,
-                new HBox(10, loginBtn, registerBtn)
-        );
+                new HBox(10, loginBtn, registerBtn));
         layout.setPadding(new Insets(15));
 
         login.setScene(new Scene(layout, 300, 200));
@@ -668,14 +718,14 @@ public class ExpenseManager_MainApp extends Application {
             if (ok) {
                 showAlert(Alert.AlertType.INFORMATION, "Registered! Please login.");
                 reg.close();
-            } else showAlert(Alert.AlertType.ERROR, "Username exists!");
+            } else
+                showAlert(Alert.AlertType.ERROR, "Username exists!");
         });
 
         VBox layout = new VBox(10,
                 new Label("New Username"), username,
                 new Label("New Password"), password,
-                register
-        );
+                register);
         layout.setPadding(new Insets(15));
 
         reg.setScene(new Scene(layout, 300, 200));
@@ -688,7 +738,8 @@ public class ExpenseManager_MainApp extends Application {
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
 
         File file = chooser.showOpenDialog(null);
-        if (file == null) return;
+        if (file == null)
+            return;
 
         try {
             List<Expense> csvList = csvHandler.readCSV(file.getAbsolutePath());
@@ -707,7 +758,6 @@ public class ExpenseManager_MainApp extends Application {
             e.printStackTrace();
         }
     }
-
 
     private HBox createSummaryCards() {
         List<Expense> expenses = dbHandler.getAllExpenses(currentUserId);
@@ -731,7 +781,7 @@ public class ExpenseManager_MainApp extends Application {
 
         VBox card2 = dashboardCard("Top Category", topCategory);
 
-        VBox card3 = dashboardCard("Avg com.expense.Expense (" + selectedCurrency + ")",
+        VBox card3 = dashboardCard("Average Expense (" + selectedCurrency + ")",
                 String.format("%.2f", avg));
 
         HBox box = new HBox(15, card1, card2, card3);
@@ -742,10 +792,11 @@ public class ExpenseManager_MainApp extends Application {
 
     private VBox dashboardCard(String title, String value) {
         Label t = new Label(title);
-        t.setStyle("-fx-text-fill: #667; -fx-font-size: 13px;");
+        // use CSS classes so themes can style titles and values
+        t.getStyleClass().add("card-title");
 
         Label v = new Label(value);
-        v.setStyle("-fx-text-fill: #2c3e58; -fx-font-size: 22px; -fx-font-weight: bold");
+        v.getStyleClass().add("card-value");
 
         VBox card = new VBox(5, t, v);
         card.getStyleClass().add("summary-card");
@@ -784,14 +835,14 @@ public class ExpenseManager_MainApp extends Application {
         root.setPadding(new Insets(10));
 
         Stage stage = new Stage();
-        stage.setTitle("com.expense.Expense Report");
+        stage.setTitle("Expense Report");
         stage.setScene(new Scene(root, 500, 600));
         stage.show();
     }
 
     private String buildReportText(Map<String, Double> monthly,
-                                   Map<String, Double> category,
-                                   double total) {
+            Map<String, Double> category,
+            double total) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("=== Monthly Summary ===\n");
@@ -807,9 +858,9 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private void exportReport(String format, String text,
-                              Map<String, Double> monthly,
-                              Map<String, Double> category,
-                              double total) {
+            Map<String, Double> monthly,
+            Map<String, Double> category,
+            double total) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save Report");
 
@@ -842,7 +893,8 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private void saveText(File file, String text) {
-        if (file == null) return;
+        if (file == null)
+            return;
 
         try (FileWriter fw = new FileWriter(file)) {
             fw.write(text);
@@ -852,11 +904,12 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private void saveCSV(File file,
-                         Map<String, Double> monthly,
-                         Map<String, Double> category,
-                         double total) {
+            Map<String, Double> monthly,
+            Map<String, Double> category,
+            double total) {
 
-        if (file == null) return;
+        if (file == null)
+            return;
 
         try (FileWriter fw = new FileWriter(file)) {
             fw.write("Section,Key,Value\n");
@@ -877,7 +930,8 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private void savePDF(File file, String text) {
-        if (file == null) return;
+        if (file == null)
+            return;
 
         try {
             com.lowagie.text.Document doc = new com.lowagie.text.Document();
@@ -891,11 +945,12 @@ public class ExpenseManager_MainApp extends Application {
     }
 
     private void saveExcel(File file,
-                           Map<String, Double> monthly,
-                           Map<String, Double> category,
-                           double total) {
+            Map<String, Double> monthly,
+            Map<String, Double> category,
+            double total) {
 
-        if (file == null) return;
+        if (file == null)
+            return;
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Report");
@@ -943,13 +998,13 @@ public class ExpenseManager_MainApp extends Application {
         }
     }
 
-
     private void saveJSON(File file,
-                          Map<String, Double> monthly,
-                          Map<String, Double> category,
-                          double total) {
+            Map<String, Double> monthly,
+            Map<String, Double> category,
+            double total) {
 
-        if (file == null) return;
+        if (file == null)
+            return;
 
         JSONObject json = new JSONObject();
         json.put("monthly", monthly);
@@ -962,7 +1017,6 @@ public class ExpenseManager_MainApp extends Application {
             e.printStackTrace();
         }
     }
-
 
     public void logout() {
         Stage stage = (Stage) logoutButton.getScene().getWindow();
@@ -985,12 +1039,13 @@ public class ExpenseManager_MainApp extends Application {
         // ===== Load robot quyền 200px =====
         Image robotImg = new Image(getClass().getResource("/robot_animation.png").toExternalForm());
         ImageView robot = new ImageView(robotImg);
-        robot.setFitWidth(200);
-        robot.setFitHeight(200);
+    // slightly smaller robot so it fits better in narrow layouts
+    robot.setFitWidth(140);
+    robot.setFitHeight(140);
 
         // Vị trí robot dưới-left
-        robot.setLayoutX(50);
-        robot.setLayoutY(90);
+    robot.setLayoutX(40);
+    robot.setLayoutY(80);
 
         // ===== Bubble =====
         Label bubble = new Label("A penny saved is a penny earned");
@@ -1001,15 +1056,16 @@ public class ExpenseManager_MainApp extends Application {
 
         // ===== Animation =====
         TranslateTransition move = new TranslateTransition(Duration.seconds(5), robot);
-        move.setFromX(0);
-        move.setToX(750);
+    move.setFromX(0);
+    // reduce horizontal travel so the robot movement is narrower
+    move.setToX(180);
         move.setCycleCount(Animation.INDEFINITE);
         move.setAutoReverse(true);
         move.play();
 
         TranslateTransition moveBubble = new TranslateTransition(Duration.seconds(5), bubble);
-        moveBubble.setFromX(0);
-        moveBubble.setToX(750);
+    moveBubble.setFromX(0);
+    moveBubble.setToX(180);
         moveBubble.setCycleCount(Animation.INDEFINITE);
         moveBubble.setAutoReverse(true);
         moveBubble.play();
@@ -1024,5 +1080,4 @@ public class ExpenseManager_MainApp extends Application {
         pane.getChildren().addAll(robot, bubble);
         return pane;
     }
-
 }
