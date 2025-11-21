@@ -34,7 +34,6 @@ public class DatabaseHandler {
         CATEGORY_MAP.put("course", "Education");
 
         CATEGORY_MAP.put("health", "Health");
-        CATEGORY_MAP.put("helth", "Health");
         CATEGORY_MAP.put("medical", "Health");
 
         CATEGORY_MAP.put("transport", "Transportation");
@@ -71,9 +70,8 @@ public class DatabaseHandler {
             }
         }
 
-        if (bestDistance <= 2) {
+        if (bestDistance <= 2)
             return CATEGORY_MAP.get(bestMatch);
-        }
 
         return "Other";
     }
@@ -86,8 +84,10 @@ public class DatabaseHandler {
 
         for (int i = 1; i <= a.length(); i++) {
             for (int j = 1; j <= b.length(); j++) {
-                if (a.charAt(i - 1) == b.charAt(j - 1)) dp[i][j] = dp[i - 1][j - 1];
-                else dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
+                if (a.charAt(i - 1) == b.charAt(j - 1))
+                    dp[i][j] = dp[i - 1][j - 1];
+                else
+                    dp[i][j] = 1 + Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1]));
             }
         }
         return dp[a.length()][b.length()];
@@ -95,28 +95,32 @@ public class DatabaseHandler {
 
     // ===========================================================
 
-
     public void connect() throws SQLException {
         String url = "jdbc:sqlite:expenses.db";
         connection = DriverManager.getConnection(url);
+
         System.out.println("Connected to SQLite Database!");
 
-        String userSql = "CREATE TABLE IF NOT EXISTS users (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "username TEXT UNIQUE NOT NULL, " +
-                "password TEXT NOT NULL" +
-                ");";
+        String userSql = """
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL
+                );
+                """;
 
-        String expenseSql = "CREATE TABLE IF NOT EXISTS expenses (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "date TEXT, " +
-                "name TEXT, " +
-                "amount REAL, " +
-                "category TEXT, " +
-                "description TEXT, " +
-                "user_id INTEGER, " +
-                "FOREIGN KEY(user_id) REFERENCES users(id)" +
-                ");";
+        String expenseSql = """
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT,
+                    name TEXT,
+                    amount REAL,
+                    category TEXT,
+                    description TEXT,
+                    user_id INTEGER,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                );
+                """;
 
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(userSql);
@@ -134,6 +138,7 @@ public class DatabaseHandler {
             stmt.executeUpdate();
             return true;
         } catch (SQLException ex) {
+            System.err.println("Register failed: " + ex.getMessage());
             return false;
         }
     }
@@ -147,7 +152,7 @@ public class DatabaseHandler {
             ResultSet res = stmt.executeQuery();
             if (res.next()) return res.getInt("id");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Login failed: " + ex.getMessage());
         }
         return -1;
     }
@@ -167,7 +172,7 @@ public class DatabaseHandler {
             stmt.setInt(6, userId);
             stmt.executeUpdate();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Save expense failed: " + ex.getMessage());
         }
     }
 
@@ -192,7 +197,7 @@ public class DatabaseHandler {
             }
 
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Load expenses failed: " + ex.getMessage());
         }
         return list;
     }
@@ -213,7 +218,7 @@ public class DatabaseHandler {
             stmt.setInt(7, userId);
             return stmt.executeUpdate() > 0;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Update failed: " + ex.getMessage());
         }
         return false;
     }
@@ -227,7 +232,7 @@ public class DatabaseHandler {
             stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Delete failed: " + ex.getMessage());
         }
         return false;
     }
@@ -253,7 +258,7 @@ public class DatabaseHandler {
             }
 
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Get expense failed: " + ex.getMessage());
         }
         return null;
     }
@@ -264,7 +269,7 @@ public class DatabaseHandler {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("deleteAllExpenses failed: " + e.getMessage());
         }
     }
 
@@ -272,10 +277,9 @@ public class DatabaseHandler {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("DELETE FROM sqlite_sequence WHERE name='expenses'");
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("resetAutoIncrement failed: " + e.getMessage());
         }
     }
-
 
     public Connection getConnection() {
         return connection;

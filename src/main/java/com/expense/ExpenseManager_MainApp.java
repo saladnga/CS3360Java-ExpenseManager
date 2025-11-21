@@ -50,7 +50,6 @@ public class ExpenseManager_MainApp extends Application {
     private Integer currentUserId = -1;
     private Button logoutButton;
     private VBox rightSidebar;
-    private String currentCurrency = "USD";
 
     // ===== CURRENCY =====
     private final CurrencyConverter converter = new CurrencyConverter();
@@ -166,7 +165,7 @@ public class ExpenseManager_MainApp extends Application {
         try {
             dbHandler.connect();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.err.println("Database connection error: " + ex.getMessage());
             return;
         }
 
@@ -231,10 +230,18 @@ public class ExpenseManager_MainApp extends Application {
         darkMode.setOnAction(e -> {
             Scene scene = logoutButton.getScene();
             if (darkMode.isSelected()) {
-                scene.getStylesheets().setAll(getClass().getResource("/dark.css").toExternalForm());
+                String darkCss = Objects.requireNonNull(
+                        getClass().getResource("/dark.css")
+                ).toExternalForm();
+
+                scene.getStylesheets().setAll(darkCss);
                 darkMode.setText("Light mode");
             } else {
-                scene.getStylesheets().setAll(getClass().getResource("/app.css").toExternalForm());
+                String lightCss = Objects.requireNonNull(
+                        getClass().getResource("/app.css")
+                ).toExternalForm();
+
+                scene.getStylesheets().setAll(lightCss);
                 darkMode.setText("Dark mode");
             }
         });
@@ -657,7 +664,7 @@ public class ExpenseManager_MainApp extends Application {
 
         // Apply converted currency
         for (Expense ex : list) {
-            double converted = converter.convertCurrency(ex.getAmount(), "USD", currentCurrency);
+            double converted = converter.convertCurrency(ex.getAmount(), "USD", selectedCurrency);
             ex.setDisplayAmount(converted);
         }
 

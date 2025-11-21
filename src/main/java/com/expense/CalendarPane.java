@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -22,10 +21,10 @@ import java.util.stream.Collectors;
 
 public class CalendarPane extends VBox {
 
-    private List<Expense> expenses;
-    private ComboBox<String> monthBox;
-    private ComboBox<Integer> yearBox;
-    private GridPane calendarGrid;
+    private final List<Expense> expenses;
+    private final ComboBox<String> monthBox;
+    private final ComboBox<Integer> yearBox;
+    private final GridPane calendarGrid;
 
     public CalendarPane(List<Expense> expenses) {
         this.expenses = expenses;
@@ -35,7 +34,10 @@ public class CalendarPane extends VBox {
 
         // Month selector
         monthBox = new ComboBox<>();
-        monthBox.getItems().addAll("01","02","03","04","05","06","07","08","09","10","11","12");
+        monthBox.getItems().addAll(
+                "01","02","03","04","05","06",
+                "07","08","09","10","11","12"
+        );
         monthBox.setValue(LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("MM")));
 
         // Year selector
@@ -43,6 +45,7 @@ public class CalendarPane extends VBox {
         for (int y = 2020; y <= 2035; y++) yearBox.getItems().add(y);
         yearBox.setValue(LocalDate.now().getYear());
 
+        // Lambda rút gọn
         monthBox.setOnAction(e -> updateCalendar());
         yearBox.setOnAction(e -> updateCalendar());
 
@@ -70,7 +73,7 @@ public class CalendarPane extends VBox {
         LocalDate firstDay = selected.atDay(1);
         int daysInMonth = selected.lengthOfMonth();
 
-        // Spending per day in THIS month
+        // Spending per day
         Map<Integer, Double> spendingPerDay = expenses.stream()
                 .filter(e -> {
                     try {
@@ -85,14 +88,14 @@ public class CalendarPane extends VBox {
                         Collectors.summingDouble(Expense::getDisplayAmount)
                 ));
 
-        // Top 3 highest spend days
+        // Top spending days
         List<Integer> top3Days = spendingPerDay.entrySet().stream()
-                .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
                 .limit(3)
                 .map(Map.Entry::getKey)
                 .toList();
 
-        int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // Monday=1 … Sunday=7
+        int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // Monday=1
         int col = startDayOfWeek - 1;
         int row = 0;
 
@@ -104,7 +107,6 @@ public class CalendarPane extends VBox {
             cell.setAlignment(Pos.TOP_CENTER);
             cell.setPrefSize(75, 60);
 
-            // Use CSS classes instead of inline colors so theme switching controls text color
             Label dayLabel = new Label(String.valueOf(day));
             dayLabel.getStyleClass().add("calendar-day-label");
 
@@ -113,35 +115,34 @@ public class CalendarPane extends VBox {
 
             cell.getChildren().addAll(dayLabel, spendLabel);
 
-            // Background color
+            // Background colors
             Background normalBg = new Background(new BackgroundFill(Color.WHITE, null, null));
             Background spendingBg = new Background(new BackgroundFill(Color.web("#e8f5ff"), null, null));
             Background topBg = new Background(new BackgroundFill(Color.web("#ffcccc"), null, null));
 
-            if (top3Days.contains(day))
-                cell.setBackground(topBg);
-            else if (spending > 0)
-                cell.setBackground(spendingBg);
-            else
-                cell.setBackground(normalBg);
+            if (top3Days.contains(day)) cell.setBackground(topBg);
+            else if (spending > 0)    cell.setBackground(spendingBg);
+            else                      cell.setBackground(normalBg);
 
             // Hover effect
             cell.setOnMouseEntered(ev -> {
                 cell.setCursor(Cursor.HAND);
                 cell.setBorder(new Border(new BorderStroke(
                         Color.web("#2c3e58"),
-                        BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT
+                        BorderStrokeStyle.SOLID,
+                        CornerRadii.EMPTY,
+                        BorderWidths.DEFAULT
                 )));
             });
 
-            cell.setOnMouseExited(ev -> {
-                cell.setBorder(new Border(new BorderStroke(
-                        Color.web("#ccc"),
-                        BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT
-                )));
-            });
+            cell.setOnMouseExited(ev -> cell.setBorder(new Border(new BorderStroke(
+                    Color.web("#ccc"),
+                    BorderStrokeStyle.SOLID,
+                    CornerRadii.EMPTY,
+                    BorderWidths.DEFAULT
+            ))));
 
-            // CLICK EVENT → show detail window
+            // Click event
             LocalDate clickedDate = LocalDate.of(year, month, day);
             cell.setOnMouseClicked(ev -> showDayDetails(clickedDate));
 
@@ -155,9 +156,6 @@ public class CalendarPane extends VBox {
         }
     }
 
-    // =========================================================
-    // SHOW DAY DETAIL WINDOW (method must be OUTSIDE updateCalendar)
-    // =========================================================
     private void showDayDetails(LocalDate date) {
 
         List<Expense> dayExpenses = expenses.stream()
@@ -193,7 +191,11 @@ public class CalendarPane extends VBox {
         TableColumn<Expense, String> descCol = new TableColumn<>("Description");
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
 
-        table.getColumns().addAll(nameCol, amountCol, categoryCol, descCol);
+        table.getColumns().add(nameCol);
+        table.getColumns().add(amountCol);
+        table.getColumns().add(categoryCol);
+        table.getColumns().add(descCol);
+
         table.getItems().addAll(dayExpenses);
 
         double total = dayExpenses.stream()

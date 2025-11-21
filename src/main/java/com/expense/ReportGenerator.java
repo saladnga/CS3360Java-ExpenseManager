@@ -4,11 +4,12 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * The com.expense.ReportGenerator class provides summarized reports
+ * The ReportGenerator class provides summarized reports
  * of expenses by month, category, and overall totals.
  */
 public class ReportGenerator {
-    private Connection connection;
+
+    private final Connection connection; // FIX: mark as final
 
     public ReportGenerator(Connection connection) {
         this.connection = connection;
@@ -21,7 +22,10 @@ public class ReportGenerator {
      *         and the value is the total amount spent.
      */
     public Map<String, Double> generateMonthlySummary() {
+
         Map<String, Double> summary = new LinkedHashMap<>();
+
+        // NOTE: "substr" is correct SQL function for SQLite
         String sql = """
             SELECT substr(date, 1, 7) AS month, SUM(amount) AS total
             FROM expenses
@@ -31,12 +35,15 @@ public class ReportGenerator {
 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
                 summary.put(rs.getString("month"), rs.getDouble("total"));
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQL Error (monthly summary): " + e.getMessage());
         }
+
         return summary;
     }
 
@@ -47,7 +54,9 @@ public class ReportGenerator {
      *         and the value is the total amount spent in that category.
      */
     public Map<String, Double> generateCategorySummary() {
+
         Map<String, Double> summary = new LinkedHashMap<>();
+
         String sql = """
             SELECT category, SUM(amount) AS total
             FROM expenses
@@ -57,12 +66,15 @@ public class ReportGenerator {
 
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
                 summary.put(rs.getString("category"), rs.getDouble("total"));
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQL Error (category summary): " + e.getMessage());
         }
+
         return summary;
     }
 
@@ -72,15 +84,20 @@ public class ReportGenerator {
      * @return The total sum of all expenses.
      */
     public double generateTotalSummary() {
+
         String sql = "SELECT SUM(amount) AS total FROM expenses";
+
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             if (rs.next()) {
                 return rs.getDouble("total");
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("SQL Error (total summary): " + e.getMessage());
         }
+
         return 0.0;
     }
 }

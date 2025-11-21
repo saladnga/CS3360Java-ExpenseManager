@@ -51,6 +51,7 @@ public class CSVHandler {
     }
 
     // Write CSV using clean export format
+    @SuppressWarnings("unused")
     public void writeCSV(String csvFile, List<Expense> expenses) throws IOException {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(csvFile))) {

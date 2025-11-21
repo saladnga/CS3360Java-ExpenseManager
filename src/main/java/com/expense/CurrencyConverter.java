@@ -3,6 +3,7 @@ package com.expense;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ public class CurrencyConverter {
     // Static fallback rates (in case API is unavailable)
     private static final Map<String, Double> STATIC_RATES = new HashMap<>();
 
-    // Currency API key
+    // Currency API key (placeholder)
     private static final String API_KEY = "cur_live_23e49NcTYicdfT5EwODWyGZAiKyQN0eZcRrhzTTf";
 
     static {
@@ -26,6 +27,7 @@ public class CurrencyConverter {
         STATIC_RATES.put("JPY", 155.5690267085);
         STATIC_RATES.put("GBP", 0.7606401215);
     }
+
 
     /**
      * Converts an amount from one currency to another.
@@ -57,13 +59,13 @@ public class CurrencyConverter {
 //    }
 
     public double convertCurrency(double amount, String fromCode, String toCode) {
-        // Disable API temporarily
-        System.out.println("Live API disabled. Using static rate only.");
 
         if (STATIC_RATES.containsKey(fromCode) && STATIC_RATES.containsKey(toCode)) {
             double usdBase = amount / STATIC_RATES.get(fromCode);
             return usdBase * STATIC_RATES.get(toCode);
         }
+
+        System.err.println("Unknown currency codes: " + fromCode + " or " + toCode);
         return amount;
     }
 
@@ -81,7 +83,9 @@ public class CurrencyConverter {
                     API_KEY, to, from
             );
 
-            URL url = new URL(urlStr);
+            // Fix deprecated URL(String)
+            URL url = URI.create(urlStr).toURL();
+
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
@@ -102,11 +106,10 @@ public class CurrencyConverter {
             String json = response.toString();
 
             double rateFromUSD = extractValue(json, from);
-            double rateToUSD   = extractValue(json, to);
+            double rateToUSD = extractValue(json, to);
 
-            if (rateFromUSD == 0) rateFromUSD = 1;
+            if (rateFromUSD == 0) rateFromUSD = 1; // fallback
 
-            // Convert: amount in "from" → USD → "to"
             return rateToUSD / rateFromUSD;
 
         } catch (Exception e) {
@@ -115,6 +118,9 @@ public class CurrencyConverter {
         }
     }
 
+    /**
+     * Extracts rate from JSON string response.
+     */
     private double extractValue(String json, String code) {
         try {
             String part = json.split("\"" + code + "\":")[1];
