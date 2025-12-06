@@ -16,6 +16,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
 import javafx.stage.FileChooser;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -23,10 +25,10 @@ import java.io.FileOutputStream;
 
 import org.json.JSONObject;
 
-// PDF
+// PDF Export
 import com.lowagie.text.pdf.PdfWriter;
 
-// Excel
+// Excel Export
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -41,7 +43,6 @@ import javafx.scene.text.Text;
 
 // Compile: mvn -q clean compile
 // Run: mvn -q javafx:run
-
 public class ExpenseManager_MainApp extends Application {
 
     private DatabaseHandler dbHandler;
@@ -152,7 +153,6 @@ public class ExpenseManager_MainApp extends Application {
         return converter.convertCurrency(amountUSD, "USD", selectedCurrency);
     }
 
-    // =====================================================================
     @Override
     public void start(Stage primaryStage) {
         dbHandler = new DatabaseHandler();
@@ -173,7 +173,7 @@ public class ExpenseManager_MainApp extends Application {
 
         boolean loggedIn = showLogin();
         if (!loggedIn) {
-            System.out.println("com.expense.User did not login. Exiting.");
+            System.out.println("User did not login. Exiting.");
             return;
         }
 
@@ -196,7 +196,7 @@ public class ExpenseManager_MainApp extends Application {
         Button reportButton = new Button("Generate Report");
         reportButton.setPrefWidth(150);
 
-        // CLEAR ALL DATA BUTTON
+        // Clear all data button
         Button clearButton = new Button("Clear All Data");
         clearButton.setPrefWidth(150);
 
@@ -211,7 +211,7 @@ public class ExpenseManager_MainApp extends Application {
             b.setPrefWidth(150);
         }
 
-        // ===== CURRENCY SELECTOR =====
+        // ===== CURRENCY =====
         Label currencyLabel = new Label("Currency:");
         currencyLabel.getStyleClass().add("sidebar-label");
         ComboBox<String> currencySelector = new ComboBox<>();
@@ -231,15 +231,13 @@ public class ExpenseManager_MainApp extends Application {
             Scene scene = logoutButton.getScene();
             if (darkMode.isSelected()) {
                 String darkCss = Objects.requireNonNull(
-                        getClass().getResource("/dark.css")
-                ).toExternalForm();
+                        getClass().getResource("/dark.css")).toExternalForm();
 
                 scene.getStylesheets().setAll(darkCss);
                 darkMode.setText("Light mode");
             } else {
                 String lightCss = Objects.requireNonNull(
-                        getClass().getResource("/app.css")
-                ).toExternalForm();
+                        getClass().getResource("/app.css")).toExternalForm();
 
                 scene.getStylesheets().setAll(lightCss);
                 darkMode.setText("Dark mode");
@@ -254,20 +252,20 @@ public class ExpenseManager_MainApp extends Application {
                 darkMode,
                 logoutButton);
 
-        // ============================
-        // CHART SIDEBAR + SELECTOR
-        // ============================
+        // ============== CHART SIDEBAR + SELECTOR ==============
         ChartService chartService = new ChartService();
         rightSidebar = new VBox(15);
         rightSidebar.getStyleClass().add("right-sidebar");
         rightSidebar.setPadding(new Insets(15));
-        // align children to the left so the "Visualization" label lines up with center
-        // content
+
+        // align children in left so the "Visualization" label lines up with
+        // center content
+
         rightSidebar.setAlignment(Pos.TOP_LEFT);
 
         Label chartTitle = new Label("Visualization");
-        // use CSS class so themes can control size/color
         chartTitle.getStyleClass().add("section-title");
+
         // expand label width and align text to left so it matches the center title
         chartTitle.setMaxWidth(Double.MAX_VALUE);
         chartTitle.setAlignment(Pos.BASELINE_LEFT);
@@ -335,9 +333,7 @@ public class ExpenseManager_MainApp extends Application {
 
         updateChartUI.run();
 
-        // ============================
-        // TABLE + SUMMARY CARDS
-        // ============================
+        // ============== TABLE + SUMMARY CARDS ==============
         VBox content = new VBox(10);
         content.setPadding(new Insets(15));
         // ensure center content children align to the left as well
@@ -406,7 +402,6 @@ public class ExpenseManager_MainApp extends Application {
         dateCol.setPrefWidth(110);
         amountCol.setPrefWidth(100);
         categoryCol.setPrefWidth(130);
-        // Allow description column to expand fully
         descCol.setMaxWidth(Double.MAX_VALUE);
 
         tableView.getColumns().addAll(idCol, nameCol, dateCol, amountCol, categoryCol, descCol);
@@ -529,24 +524,46 @@ public class ExpenseManager_MainApp extends Application {
 
         save.setOnAction(e -> {
             try {
-                double amount = Double.parseDouble(amountF.getText());
+                // Basic field validation
+                String name = nameF.getText() == null ? "" : nameF.getText().trim();
+                String dateStr = dateF.getText() == null ? "" : dateF.getText().trim();
                 String categoryNormalized = normalizeCategory(categoryF.getText());
 
+                if (name.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Name is required.");
+                    return;
+                }
+
+                // Validate date (expects ISO yyyy-MM-dd)
+                try {
+                    LocalDate.parse(dateStr);
+                } catch (DateTimeParseException date) {
+                    showAlert(Alert.AlertType.ERROR, "Date must be in YYYY-MM-DD format.");
+                    return;
+                }
+
+                double amount = Double.parseDouble(amountF.getText());
+                if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 0) {
+                    showAlert(Alert.AlertType.ERROR, "Amount must be a non-negative number.");
+                    return;
+                }
+
                 Expense ex = new Expense(null,
-                        dateF.getText(),
-                        nameF.getText(),
+                        dateStr,
+                        name,
                         amount,
                         categoryNormalized,
                         descF.getText());
 
                 dbHandler.saveExpense(ex, currentUserId);
-                // refresh UI immediately so user sees the new expense without clicking "View
-                // All Expenses"
                 loadData();
                 refreshCurrencyUI();
                 form.close();
+
+            } catch (NumberFormatException nfe) {
+                showAlert(Alert.AlertType.ERROR, "Amount must be a valid number.");
             } catch (Exception err) {
-                showAlert(Alert.AlertType.ERROR, "Invalid input!");
+                showAlert(Alert.AlertType.ERROR, "Invalid input: " + err.getMessage());
             }
         });
 
@@ -593,22 +610,50 @@ public class ExpenseManager_MainApp extends Application {
 
         save.setOnAction(e -> {
             try {
-                int id = Integer.parseInt(idF.getText());
-                double amount = Double.parseDouble(amountF.getText());
+                int id = Integer.parseInt(idF.getText().trim());
 
                 Expense ex = dbHandler.getExpenseById(id, currentUserId);
+                if (ex == null) {
+                    showAlert(Alert.AlertType.ERROR, "Expense not found for ID: " + id);
+                    return;
+                }
 
-                ex.setName(nameF.getText());
-                ex.setDate(dateF.getText());
+                String name = nameF.getText() == null ? "" : nameF.getText().trim();
+                String dateStr = dateF.getText() == null ? "" : dateF.getText().trim();
+
+                if (name.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Name is required.");
+                    return;
+                }
+
+                try {
+                    LocalDate.parse(dateStr);
+                } catch (DateTimeParseException dtpe) {
+                    showAlert(Alert.AlertType.ERROR, "Date must be in YYYY-MM-DD format.");
+                    return;
+                }
+
+                double amount = Double.parseDouble(amountF.getText().trim());
+                if (Double.isNaN(amount) || Double.isInfinite(amount) || amount < 0) {
+                    showAlert(Alert.AlertType.ERROR, "Amount must be a non-negative number.");
+                    return;
+                }
+
+                ex.setName(name);
+                ex.setDate(dateStr);
                 ex.setAmount(amount);
                 ex.setCategory(normalizeCategory(categoryF.getText()));
                 ex.setDescription(descF.getText());
 
                 dbHandler.updateExpense(ex, currentUserId);
+                loadData();
+                refreshCurrencyUI();
                 form.close();
 
+            } catch (NumberFormatException nfe) {
+                showAlert(Alert.AlertType.ERROR, "ID and Amount must be valid numbers.");
             } catch (Exception err) {
-                showAlert(Alert.AlertType.ERROR, "Invalid data");
+                showAlert(Alert.AlertType.ERROR, "Invalid data: " + err.getMessage());
             }
         });
 
@@ -737,33 +782,6 @@ public class ExpenseManager_MainApp extends Application {
 
         reg.setScene(new Scene(layout, 300, 200));
         reg.show();
-    }
-
-    private void importCSV() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Select CSV File to Import");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-
-        File file = chooser.showOpenDialog(null);
-        if (file == null)
-            return;
-
-        try {
-            List<Expense> csvList = csvHandler.readCSV(file.getAbsolutePath());
-
-            for (Expense ex : csvList) {
-                ex.setCategory(normalizeCategory(ex.getCategory()));
-                dbHandler.saveExpense(ex, currentUserId);
-            }
-
-            loadData();
-            refreshCurrencyUI();
-            showAlert(Alert.AlertType.INFORMATION, "Imported successfully!");
-
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Failed to import file!");
-            e.printStackTrace();
-        }
     }
 
     private HBox createSummaryCards() {
@@ -1039,20 +1057,15 @@ public class ExpenseManager_MainApp extends Application {
 
         Pane pane = new Pane();
         pane.setPrefHeight(220);
-
-        // Áp dụng CSS class thay vì inline style
         pane.getStyleClass().add("robot-pane");
 
-        // ===== Load robot quyền 200px =====
+        // ===== Load robot =====
         Image robotImg = new Image(getClass().getResource("/robot_animation.png").toExternalForm());
         ImageView robot = new ImageView(robotImg);
-    // slightly smaller robot so it fits better in narrow layouts
-    robot.setFitWidth(140);
-    robot.setFitHeight(140);
-
-        // Vị trí robot dưới-left
-    robot.setLayoutX(40);
-    robot.setLayoutY(80);
+        robot.setFitWidth(140);
+        robot.setFitHeight(140);
+        robot.setLayoutX(40);
+        robot.setLayoutY(80);
 
         // ===== Bubble =====
         Label bubble = new Label("A penny saved is a penny earned");
@@ -1063,16 +1076,15 @@ public class ExpenseManager_MainApp extends Application {
 
         // ===== Animation =====
         TranslateTransition move = new TranslateTransition(Duration.seconds(5), robot);
-    move.setFromX(0);
-    // reduce horizontal travel so the robot movement is narrower
-    move.setToX(180);
+        move.setFromX(0);
+        move.setToX(180);
         move.setCycleCount(Animation.INDEFINITE);
         move.setAutoReverse(true);
         move.play();
 
         TranslateTransition moveBubble = new TranslateTransition(Duration.seconds(5), bubble);
-    moveBubble.setFromX(0);
-    moveBubble.setToX(180);
+        moveBubble.setFromX(0);
+        moveBubble.setToX(180);
         moveBubble.setCycleCount(Animation.INDEFINITE);
         moveBubble.setAutoReverse(true);
         moveBubble.play();

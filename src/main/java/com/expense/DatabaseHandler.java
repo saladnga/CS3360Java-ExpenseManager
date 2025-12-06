@@ -58,7 +58,7 @@ public class DatabaseHandler {
         if (CATEGORY_MAP.containsKey(input))
             return CATEGORY_MAP.get(input);
 
-        // fuzzy match
+        // Fuzzy match
         String bestMatch = null;
         int bestDistance = Integer.MAX_VALUE;
 
@@ -76,11 +76,14 @@ public class DatabaseHandler {
         return "Other";
     }
 
+    // Levenshtein Distance to Map Title to Specific Description
     private int levenshteinDistance(String a, String b) {
         int[][] dp = new int[a.length() + 1][b.length() + 1];
 
-        for (int i = 0; i <= a.length(); i++) dp[i][0] = i;
-        for (int j = 0; j <= b.length(); j++) dp[0][j] = j;
+        for (int i = 0; i <= a.length(); i++)
+            dp[i][0] = i;
+        for (int j = 0; j <= b.length(); j++)
+            dp[0][j] = j;
 
         for (int i = 1; i <= a.length(); i++) {
             for (int j = 1; j <= b.length(); j++) {
@@ -92,8 +95,6 @@ public class DatabaseHandler {
         }
         return dp[a.length()][b.length()];
     }
-
-    // ===========================================================
 
     public void connect() throws SQLException {
         String url = "jdbc:sqlite:expenses.db";
@@ -150,7 +151,8 @@ public class DatabaseHandler {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getPassword());
             ResultSet res = stmt.executeQuery();
-            if (res.next()) return res.getInt("id");
+            if (res.next())
+                return res.getInt("id");
         } catch (SQLException ex) {
             System.err.println("Login failed: " + ex.getMessage());
         }
@@ -192,8 +194,7 @@ public class DatabaseHandler {
                         rs.getString("name"),
                         rs.getDouble("amount"),
                         normalizeCategory(rs.getString("category")),
-                        rs.getString("description")
-                ));
+                        rs.getString("description")));
             }
 
         } catch (SQLException ex) {
@@ -253,8 +254,7 @@ public class DatabaseHandler {
                         rs.getString("name"),
                         rs.getDouble("amount"),
                         normalizeCategory(rs.getString("category")),
-                        rs.getString("description")
-                );
+                        rs.getString("description"));
             }
 
         } catch (SQLException ex) {

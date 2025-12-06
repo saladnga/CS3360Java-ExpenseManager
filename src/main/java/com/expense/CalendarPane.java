@@ -45,7 +45,7 @@ public class CalendarPane extends VBox {
         for (int y = 2020; y <= 2035; y++) yearBox.getItems().add(y);
         yearBox.setValue(LocalDate.now().getYear());
 
-        // Lambda rút gọn
+        // Shortened Lambda
         monthBox.setOnAction(e -> updateCalendar());
         yearBox.setOnAction(e -> updateCalendar());
 
@@ -95,7 +95,7 @@ public class CalendarPane extends VBox {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // Monday=1
+        int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // Base: Monday = 1
         int col = startDayOfWeek - 1;
         int row = 0;
 

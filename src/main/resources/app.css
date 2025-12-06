@@ -161,7 +161,6 @@
   -fx-font-weight: 700;
 }
 
-/* Ensure Text nodes inside table cells (e.g. wrapped description Text) use readable color in light theme */
 .table-view .table-cell .text,
 .table-view .text,
 .table-view Text,

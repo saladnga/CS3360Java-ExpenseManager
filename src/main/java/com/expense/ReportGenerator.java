@@ -7,9 +7,10 @@ import java.util.*;
  * The ReportGenerator class provides summarized reports
  * of expenses by month, category, and overall totals.
  */
+
 public class ReportGenerator {
 
-    private final Connection connection; // FIX: mark as final
+    private final Connection connection;
 
     public ReportGenerator(Connection connection) {
         this.connection = connection;
@@ -21,20 +22,19 @@ public class ReportGenerator {
      * @return A map where the key is the month (e.g. "2025-11")
      *         and the value is the total amount spent.
      */
-    public Map<String, Double> generateMonthlySummary() {
 
+    public Map<String, Double> generateMonthlySummary() {
         Map<String, Double> summary = new LinkedHashMap<>();
 
-        // NOTE: "substr" is correct SQL function for SQLite
         String sql = """
-            SELECT substr(date, 1, 7) AS month, SUM(amount) AS total
-            FROM expenses
-            GROUP BY month
-            ORDER BY month ASC
-        """;
+                    SELECT substr(date, 1, 7) AS month, SUM(amount) AS total
+                    FROM expenses
+                    GROUP BY month
+                    ORDER BY month ASC
+                """;
 
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 summary.put(rs.getString("month"), rs.getDouble("total"));
@@ -53,19 +53,20 @@ public class ReportGenerator {
      * @return A map where the key is the category name
      *         and the value is the total amount spent in that category.
      */
+
     public Map<String, Double> generateCategorySummary() {
 
         Map<String, Double> summary = new LinkedHashMap<>();
 
         String sql = """
-            SELECT category, SUM(amount) AS total
-            FROM expenses
-            GROUP BY category
-            ORDER BY total DESC
-        """;
+                    SELECT category, SUM(amount) AS total
+                    FROM expenses
+                    GROUP BY category
+                    ORDER BY total DESC
+                """;
 
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 summary.put(rs.getString("category"), rs.getDouble("total"));
@@ -83,12 +84,13 @@ public class ReportGenerator {
      *
      * @return The total sum of all expenses.
      */
+
     public double generateTotalSummary() {
 
         String sql = "SELECT SUM(amount) AS total FROM expenses";
 
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             if (rs.next()) {
                 return rs.getDouble("total");

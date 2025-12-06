@@ -10,7 +10,7 @@ import java.util.List;
 
 public class CSVHandler {
 
-    // Read CSV file and return list of com.expense.Expense objects
+    // Read CSV file and return list of Expense objects
     public List<Expense> readCSV(String csvFile) throws IOException {
 
         List<Expense> result = new ArrayList<>();
@@ -41,7 +41,7 @@ public class CSVHandler {
                 String category = fields[3].trim();
                 String description = fields.length > 4 ? fields[4].trim() : "";
 
-                // Do not use ID (SQLite will auto-generate)
+                // No ID used, SQLite will generate automatically
                 Expense ex = new Expense(null, date, name, amount, category, description);
                 result.add(ex);
             }

@@ -10,15 +10,18 @@ import java.util.Map;
 
 /**
  * Handles conversion between currencies.
- * Can use static exchange rates or live rates from https://app.currencyapi.com/api-keys.
+ * Can use static exchange rates or live rates from
+ * https://app.currencyapi.com/api-keys.
  */
+
 public class CurrencyConverter {
 
-    // Static fallback rates (in case API is unavailable)
+    // Static fallback rates - from 2025 (in case API is unavailable)
     private static final Map<String, Double> STATIC_RATES = new HashMap<>();
 
     // Currency API key (placeholder)
-    private static final String API_KEY = "cur_live_23e49NcTYicdfT5EwODWyGZAiKyQN0eZcRrhzTTf";
+    // Replace with your own API key
+    private static final String API_KEY = "";
 
     static {
         STATIC_RATES.put("USD", 1.0);
@@ -28,37 +31,30 @@ public class CurrencyConverter {
         STATIC_RATES.put("GBP", 0.7606401215);
     }
 
-
     /**
      * Converts an amount from one currency to another.
-     * Attempts to use live data from currencyapi.com; falls back to static rates if API fails.
+     * Attempts to use live data from currencyapi.com; falls back to static rates if
+     * API fails.
      *
      * @param amount   The amount to convert
      * @param fromCode Source currency code (e.g. "USD")
      * @param toCode   Target currency code (e.g. "EUR")
      * @return Converted amount
      */
-//    public double convertCurrency(double amount, String fromCode, String toCode) {
-//        try {
-//            double liveRate = getLiveRate(fromCode, toCode);
-//            if (liveRate > 0) {
-//                return amount * liveRate;
-//            }
-//        } catch (Exception e) {
-//            System.err.println("Live conversion failed. Using static rate...");
-//        }
-//
-//        // fallback
-//        if (STATIC_RATES.containsKey(fromCode) && STATIC_RATES.containsKey(toCode)) {
-//            double usdBase = amount / STATIC_RATES.get(fromCode);
-//            return usdBase * STATIC_RATES.get(toCode);
-//        }
-//
-//        System.err.println("Unknown currency codes: " + fromCode + " or " + toCode);
-//        return amount;
-//    }
 
     public double convertCurrency(double amount, String fromCode, String toCode) {
+
+        // If you are using API, uncomment this:
+
+        // try {
+        // double liveRate = getLiveRate(fromCode, toCode);
+        // if (liveRate > 0) {
+        // return amount * liveRate;
+        // }
+        // } catch (Exception e) {
+        // System.err.println("Live rate failed, using static fallbacks: " +
+        // e.getMessage());
+        // }
 
         if (STATIC_RATES.containsKey(fromCode) && STATIC_RATES.containsKey(toCode)) {
             double usdBase = amount / STATIC_RATES.get(fromCode);
@@ -76,12 +72,12 @@ public class CurrencyConverter {
      * @param to   Target currency (e.g. "EUR")
      * @return Exchange rate or -1 if unavailable
      */
+
     private double getLiveRate(String from, String to) {
         try {
             String urlStr = String.format(
                     "https://api.currencyapi.com/v3/latest?apikey=%s&currencies=%s,%s",
-                    API_KEY, to, from
-            );
+                    API_KEY, to, from);
 
             // Fix deprecated URL(String)
             URL url = URI.create(urlStr).toURL();
@@ -108,7 +104,8 @@ public class CurrencyConverter {
             double rateFromUSD = extractValue(json, from);
             double rateToUSD = extractValue(json, to);
 
-            if (rateFromUSD == 0) rateFromUSD = 1; // fallback
+            if (rateFromUSD == 0)
+                rateFromUSD = 1; // fallback
 
             return rateToUSD / rateFromUSD;
 

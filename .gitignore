@@ -35,3 +35,6 @@ Thumbs.db
 
 # DO NOT REMOVE THIS — ensure src/ is tracked
 !src/
+
+# Library folder:
+lib/
