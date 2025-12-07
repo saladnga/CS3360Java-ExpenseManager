@@ -117,7 +117,7 @@ Before running the application, ensure you have:
    mvn compile
    ```
 
-## ▶️ Running the Application
+## Running the Application
 
 ### Using Maven (Recommended)
 
